@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            margin-top: 20px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 30px;
+            background: linear-gradient(45deg, red, blue, green, yellow, purple, pink);
+            background-size: 300% 300%;
+            animation: gradient 5s ease infinite;
+            z-index: -1;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            outline: none;
+            margin: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #ccc;
+            white-space: pre-wrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+        .slide {
+            display: inline-block;
+            position: absolute;
+            animation: slide 5s linear infinite;
+        }
+        @keyframes slide {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        .listening {
+            background-color: #28a745;
+            box-shadow: 0 4px 10px rgba(0, 128, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Voice Assistant</h1>
+        <div id="output"><span class="slide" id="song-name"></span></div>
+        <div class="image-wrapper">
+            <div class="ring"></div>
+            <img src="https://i.postimg.cc/4x6m3X6X/Design-ohne-Titel-1-1024x576.webp" alt="AI Voice Assistant Image">
+        </div>
+        <button id="start-btn">Start Listening</button>
+    </div>
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const outputDiv = document.getElementById('output');
+        const songNameSpan = document.getElementById('song-name');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US'; // Default language
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        let isListening = false;
+        let searchInterval;
+        let currentSearchQuery = '';
+        let conversationHistory = '';
+
+        startBtn.addEventListener('click', () => {
+            if (isListening) {
+                recognition.stop();
+                startBtn.classList.remove('listening');
+                startBtn.textContent = 'Start Listening';
+            } else {
+                recognition.start();
+                outputDiv.textContent = "Listening...";
+                startBtn.classList.add('listening');
+                startBtn.textContent = 'Stop Listening';
+            }
+            isListening = !isListening;
+        });
+
+        recognition.onresult = (event) => {
+            const userCommand = event.results[0][0].transcript.toLowerCase();
+            processCommand(userCommand);
+        };
+
+        recognition.onerror = (event) => {
+            outputDiv.textContent = `Error occurred: ${event.error}`;
+        };
+
+        async function processCommand(command) {
+            const synth = window.speechSynthesis;
+            let response = '';
+
+            // Check for language command
+            if (command.includes('speak in')) {
+                const lang = command.split('speak in')[1].trim().toLowerCase();
+                switch (lang) {
+                    case 'spanish':
+                        recognition.lang = 'es-ES';
+                        response = 'Language set to Spanish.';
+                        break;
+                    case 'french':
+                        recognition.lang = 'fr-FR';
+                        response = 'Language set to French.';
+                        break;
+                    case 'german':
+                        recognition.lang = 'de-DE';
+                        response = 'Language set to German.';
+                        break;
+                    default:
+                        response = 'Language not recognized. Defaulting to English.';
+                        recognition.lang = 'en-US';
+                }
+                appendToConversationHistory(command, response);
+                return;
+            }
+
+            // Command to open applications or websites
+            if (command.includes('open whatsapp')) {
+                response = `Opening WhatsApp Web.`;
+                await openApplication('whatsapp');
+            } else if (command.includes('open calculator')) {
+                response = `Opening Calculator.`;
+                await openApplication('calculator');
+            } else if (command.includes('open this pc')) {
+                response = `Opening This PC.`;
+                await openApplication('this-pc');
+            } else if (command.includes('search for') && command.includes('on youtube')) {
+                const searchQuery = command.replace(/search for (.+) on youtube/, '$1').trim();
+                if (searchQuery) {
+                    currentSearchQuery = searchQuery;
+                    response = `Searching for "${searchQuery}" on YouTube.`;
+                    appendToConversationHistory(command, response);
+                    await performYouTubeSearch(searchQuery);
+                } else {
+                    response = 'Please provide a search term.';
+                }
+            } else if (command.includes('search for')) {
+                const searchQuery = command.replace('search for', '').trim();
+                if (searchQuery) {
+                    currentSearchQuery = searchQuery;
+                    response = `Searching for "${searchQuery}" on Google.`;
+                    appendToConversationHistory(command, response);
+                    await performGoogleSearch(searchQuery);
+                } else {
+                    response = 'Please provide a search term.';
+                }
+            } else if (command.includes('search continuously on google')) {
+                const searchQuery = command.replace('search continuously on google', '').trim();
+                if (searchQuery) {
+                    currentSearchQuery = searchQuery;
+                    response = `Searching continuously for "${searchQuery}" on Google.`;
+                    appendToConversationHistory(command, response);
+                    startContinuousSearch('google');
+                } else {
+                    response = 'Please provide a search term.';
+                }
+            } else if (command.includes('stop searching')) {
+                response = `Stopping the continuous search.`;
+                appendToConversationHistory(command, response);
+                stopContinuousSearch();
+            } else if (command.includes('play song')) {
+                const songName = command.replace('play song', '').trim();
+                response = `Searching for and playing ${songName}.`;
+                appendToConversationHistory(command, response);
+                songNameSpan.textContent = songName; // Set the song name for sliding effect
+                songNameSpan.style.animation = 'slide 5s linear infinite'; // Start sliding animation
+                try {
+                    const res = await fetch('http://localhost:3000/api/play-song', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ songName }),
+                    });
+                    const data = await res.json();
+                    response = data.error ? `Error: ${data.error}` : data.message;
+                } catch (error) {
+                    response = 'Error communicating with the server.';
+                }
+            } else if (command.includes('open youtube')) {
+                response = `Opening YouTube.`;
+                appendToConversationHistory(command, response);
+                await openApplication('youtube');
+            } else if (command.includes('open google')) {
+                response = `Opening Google.`;
+                appendToConversationHistory(command, response);
+                await openApplication('google');
+            } else {
+                // For other commands, use OpenAI
+                try {
+                    const res = await fetch('http://localhost:3000/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: command }),
+                    });
+                    const data = await res.json();
+                    response = data.response || 'I did not understand that.';
+                } catch (error) {
+                    response = 'Error communicating with OpenAI.';
+                }
+            }
+            appendToConversationHistory(command, response);
+            synth.speak(new SpeechSynthesisUtterance(response));
+        }
+
+        function appendToConversationHistory(command, response) {
+            conversationHistory += `You said: ${command}\nAssistant: ${response}\n`;
+            outputDiv.textContent = conversationHistory;
+            setTimeout(() => {
+                conversationHistory = conversationHistory.replace(`You said: ${command}\nAssistant: ${response}\n`, '');
+                outputDiv.textContent = conversationHistory;
+            }, 3000); // Adjust time as necessary
+        }
+
+        async function openApplication(app) {
+            try {
+                const res = await fetch(`http://localhost:3000/api/open-${app}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const data = await res.json();
+                appendToConversationHistory(`open ${app}`, data.message);
+            } catch (error) {
+                appendToConversationHistory(`open ${app}`, 'Error communicating with the server.');
+            }
+        }
+
+        function performYouTubeSearch(query) {
+            return fetch('http://localhost:3000/api/open-youtube', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                outputDiv.textContent += `\nAssistant: ${data.message}`;
+            })
+            .catch(error => {
+                outputDiv.textContent += `\nAssistant: Error communicating with the server.`;
+            });
+        }
+
+        function performGoogleSearch(query) {
+            return fetch('http://localhost:3000/api/open-google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                outputDiv.textContent += `\nAssistant: ${data.message}`;
+            })
+            .catch(error => {
+                outputDiv.textContent += `\nAssistant: Error communicating with the server.`;
+            });
+        }
+
+        function startContinuousSearch(platform) {
+            if (searchInterval) return;
+            searchInterval = setInterval(() => {
+                if (platform === 'google') {
+                    performGoogleSearch(currentSearchQuery);
+                }
+            }, 10000);
+        }
+
+        function stopContinuousSearch() {
+            clearInterval(searchInterval);
+            searchInterval = null;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        .container {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            background: rgba(30, 30, 30, 0.9);
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            animation: slideIn 1s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        video {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: zoomIn 1s ease;
+        }
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            color: #ffffff;
+            background-color: #6200ea;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            outline: none;
+            margin: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        button:hover {
+            background-color: #3700b3;
+            transform: translateY(-3px);
+        }
+        button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s;
+            z-index: 0;
+        }
+        button:hover:after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #ccc;
+            white-space: pre-wrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background-color: rgba(40, 44, 52, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .popup.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .letter {
+            display: inline-block;
+            font-size: 24px;
+            animation: colorChange 1s infinite alternate;
+            margin-right: 2px;
+        }
+        @keyframes colorChange {
+            0% { color: #ff0080; }
+            20% { color: #ffea00; }
+            40% { color: #00ff00; }
+            60% { color: #00bfff; }
+            80% { color: #6200ea; }
+            100% { color: #ff0080; }
+        }
+        .rgb-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(270deg, #ff0080, #00bfff, #00ff00);
+            background-size: 600% 600%;
+            animation: gradient 10s ease infinite;
+            z-index: 1;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Sound Bar Styles */
+        .music-bar {
+            position: absolute;
+            bottom: 80px;
+            width: 10px;
+            background-color: #6200ea;
+            border-radius: 5px;
+            transition: height 0.1s ease;
+            box-shadow: 0 0 15px rgba(98, 0, 234, 0.5);
+            transform: rotateY(30deg);
+        }
+        .left-bar {
+            left: 20%;
+        }
+        .right-bar {
+            right: 20%;
+        }
+        /* Chat Box Styles */
+        .chat-box {
+            max-width: 400px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            overflow-y: auto;
+            max-height: 200px;
+            border: 1px solid #444;
+        }
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .chat-message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #6200ea;
+            color: #fff;
+            align-self: flex-end;
+        }
+        .assistant-message {
+            background-color: #444;
+            color: #fff;
+            align-self: flex-start;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div class="rgb-background"></div>
+    <div class="container">
+        <h1 id="title"></h1>
+        <div id="output"><span class="slide" id="song-name"></span></div>
+        <div class="image-wrapper">
+            <video id="videoElement" width="400" controls autoplay loop muted>
+                <source src="abc.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <button id="start-btn">Stop Listening</button>
+        <div class="music-bar left-bar" id="leftBar" style="height: 0;"></div>
+        <div class="music-bar right-bar" id="rightBar" style="height: 0;"></div>
+    </div>
+    <div id="popup" class="popup"></div>
+    <!-- Chat Box -->
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="chat-input" class="chat-input" placeholder="Type your message..." />
+    </div>
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const outputDiv = document.getElementById('output');
+        const songNameSpan = document.getElementById('song-name');
+        const popup = document.getElementById('popup');
+        const titleElement = document.getElementById('title');
+        const videoElement = document.getElementById('videoElement');
+        const leftBar = document.getElementById('leftBar');
+        const rightBar = document.getElementById('rightBar');
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US'; // Default language
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        let isListening = true; // Start in listening mode
+        let currentSearchQuery = '';
+        let conversationHistory = '';
+        let defaultLanguage = 'en-US'; // Default language
+        let musicBarsActive = false; // Track whether music bars are active
+        let searchInterval = null; // Variable to hold search interval
+
+        // Web Audio API setup
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaElementSource(videoElement);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 256; // Adjust this value if needed
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        startBtn.addEventListener('click', () => {
+            if (isListening) {
+                recognition.stop();
+                startBtn.textContent = 'Start Listening';
+            } else {
+                recognition.start();
+                outputDiv.textContent = "Listening...";
+                startBtn.textContent = 'Stop Listening';
+            }
+            isListening = !isListening;
+        });
+
+        recognition.onresult = (event) => {
+            const userCommand = event.results[0][0].transcript.toLowerCase();
+            processCommand(userCommand);
+        };
+
+        recognition.onerror = (event) => {
+            outputDiv.textContent = `Error occurred: ${event.error}`;
+        };
+
+        async function processCommand(command) {
+            const synth = window.speechSynthesis;
+            let response = '';
+
+            if (command.includes('end talk')) {
+                response = `Ending the conversation.`;
+                appendToConversationHistory(command, response);
+                synth.speak(new SpeechSynthesisUtterance(response));
+                recognition.stop(); // Stop listening
+                isListening = false; // Update isListening state
+                startBtn.textContent = 'Start Listening'; // Reset button text
+                return; // Exit the function
+            }
+
+            // Check for language setting
+            if (command.includes('speak in')) {
+                const lang = command.split('speak in')[1].trim().toLowerCase();
+                if (['spanish', 'french', 'german'].includes(lang)) {
+                    defaultLanguage = lang === 'spanish' ? 'es-ES' : lang === 'french' ? 'fr-FR' : 'de-DE';
+                    response = `Language set to ${lang}.`;
+                    appendToConversationHistory(command, response);
+                    synth.speak(new SpeechSynthesisUtterance(response));
+                    return;
+                }
+            }
+
+            // Command to open applications or websites
+            if (command.includes('open whatsapp')) {
+                response = `Opening WhatsApp Web.`;
+                await openApplication('whatsapp');
+            } else if (command.includes('open calculator')) {
+                response = `Opening Calculator.`;
+                await openApplication('calculator');
+            } else if (command.includes('open this pc')) {
+                response = `Opening This PC.`;
+                await openApplication('this-pc');
+            } else if (command.includes('open news channel')) {
+                response = `Opening News Channel.`;
+                await openApplication('news');
+            } else if (command.includes('open youtube')) {
+                response = `Opening YouTube.`;
+                await openApplication('youtube');
+            } else if (command.includes('open google')) {
+                response = `Opening Google.`;
+                await openApplication('google');
+            } else if (command.includes('open chat')) {
+                response = `Opening ChatGPT.`;
+                await openApplication('chatgpt');
+            } else if (command.includes('search for') && command.includes('on youtube')) {
+                const searchQuery = command.replace(/search for (.+) on youtube/, '$1').trim();
+                if (searchQuery) {
+                    currentSearchQuery = searchQuery;
+                    response = `Searching for "${searchQuery}" on YouTube.`;
+                    appendToConversationHistory(command, response);
+                    await performYouTubeSearch(searchQuery);
+                }
+            } else if (command.includes('search for')) {
+                const searchQuery = command.replace('search for', '').trim();
+                if (searchQuery) {
+                    currentSearchQuery = searchQuery;
+                    response = `Searching for "${searchQuery}" on Google.`;
+                    appendToConversationHistory(command, response);
+                    await performGoogleSearch(searchQuery);
+                }
+            } else if (command.includes('search continuously on google')) {
+                const searchQuery = command.replace('search continuously on google', '').trim();
+                if (searchQuery) {
+                    currentSearchQuery = searchQuery;
+                    response = `Searching continuously for "${searchQuery}" on Google.`;
+                    appendToConversationHistory(command, response);
+                    startContinuousSearch('google');
+                }
+            } else if (command.includes('stop searching')) {
+                response = `Stopping the continuous search.`;
+                appendToConversationHistory(command, response);
+                stopContinuousSearch();
+            } else if (command.includes('play song')) {
+                const songName = command.replace('play song', '').trim();
+                response = `Searching for and playing ${songName}.`;
+                appendToConversationHistory(command, response);
+                songNameSpan.textContent = songName;
+                songNameSpan.style.animation = 'slide 5s linear infinite';
+                musicBarsActive = true; // Activate music bars
+                startMusicBars();
+                try {
+                    const res = await fetch('http://localhost:3000/api/play-song', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ songName }),
+                    });
+                    const data = await res.json();
+                    response = data.error ? `Error: ${data.error}` : data.message;
+                } catch (error) {
+                    response = 'Error communicating with the server.';
+                }
+            } else if (command.includes('search for') && command.includes('on chatgpt')) {
+                const searchQuery = command.replace(/search for (.+) on chatgpt/, '$1').trim();
+                if (searchQuery) {
+                    response = `Searching for "${searchQuery}" on ChatGPT.`;
+                    appendToConversationHistory(command, response);
+                    const chatResponse = await getChatGPTResponse(searchQuery);
+                    appendToConversationHistory(`search for ${searchQuery} on chatgpt`, chatResponse);
+                    synth.speak(new SpeechSynthesisUtterance(chatResponse));
+                    return;
+                }
+            } else if (command.includes('shut down')) {
+                response = `shutting down the system.`;
+                appendToConversationHistory(command, response);
+                synth.speak(new SpeechSynthesisUtterance(response));
+                
+                // Call the sign-out endpoint
+                try {
+                    await fetch('http://localhost:3000/api/signout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+                } catch (error) {
+                    console.error('Error during sign out:', error);
+                }
+
+                return; // Exit the function
+            } else {
+                // Handle ChatGPT questions
+                response = await getChatGPTResponse(command);
+            }
+            appendToConversationHistory(command, response);
+            synth.speak(new SpeechSynthesisUtterance(response));
+        }
+
+        async function getChatGPTResponse(command) {
+            try {
+                const res = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: command }),
+                });
+                const data = await res.json();
+                return data.response || 'I am not sure how to answer that.';
+            } catch (error) {
+                return 'Error communicating with OpenAI.';
+            }
+        }
+
+        function appendToConversationHistory(command, response) {
+            conversationHistory += `You said: ${command}\nAssistant: ${response}\n`;
+            outputDiv.textContent = conversationHistory.replace(/ /g, '\u00A0');
+            setTimeout(() => {
+                conversationHistory = conversationHistory.replace(`You said: ${command}\nAssistant: ${response}\n`, '');
+                outputDiv.textContent = conversationHistory.replace(/ /g, '\u00A0');
+            }, 3000);
+        }
+
+        async function openApplication(app) {
+            try {
+                const res = await fetch(`http://localhost:3000/api/open-${app}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const data = await res.json();
+                appendToConversationHistory(`open ${app}`, data.message);
+            } catch (error) {
+                appendToConversationHistory(`open ${app}`, 'Error communicating with the server.');
+            }
+        }
+
+        function performYouTubeSearch(query) {
+            return fetch('http://localhost:3000/api/open-youtube', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                outputDiv.textContent += `\nAssistant: ${data.message}`.replace(/ /g, '\u00A0');
+            })
+            .catch(error => {
+                outputDiv.textContent += `\nAssistant: Error communicating with the server.`.replace(/ /g, '\u00A0');
+            });
+        }
+
+        function performGoogleSearch(query) {
+            return fetch('http://localhost:3000/api/open-google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                outputDiv.textContent += `\nAssistant: ${data.message}`.replace(/ /g, '\u00A0');
+            })
+            .catch(error => {
+                outputDiv.textContent += `\nAssistant: Error communicating with the server.`.replace(/ /g, '\u00A0');
+            });
+        }
+
+        function startContinuousSearch(platform) {
+            if (searchInterval) return;
+            searchInterval = setInterval(() => {
+                if (platform === 'google') {
+                    performGoogleSearch(currentSearchQuery);
+                }
+            }, 10000);
+        }
+
+        function stopContinuousSearch() {
+            clearInterval(searchInterval);
+            searchInterval = null;
+        }
+
+        function showWelcomeMessage() {
+            const welcomeMessage = "Welcome to the AI Voice Assistant.";
+            popup.innerHTML = '';
+            popup.classList.add('show');
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < welcomeMessage.length) {
+                    const letterSpan = document.createElement('span');
+                    letterSpan.classList.add('letter');
+                    letterSpan.textContent = welcomeMessage[index];
+                    popup.appendChild(letterSpan);
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    const synth = window.speechSynthesis;
+                    const utterance = new SpeechSynthesisUtterance(welcomeMessage);
+                    synth.speak(utterance);
+                    setTimeout(() => {
+                        popup.classList.remove('show');
+                    }, 3000);
+                }
+            }, 100);
+        }
+
+        function showTitle() {
+            const titleText = "AI Voice Assistant";
+            titleElement.innerHTML = '';
+            setTimeout(() => {
+                let index = 0;
+                const titleInterval = setInterval(() => {
+                    if (index < titleText.length) {
+                        const letterSpan = document.createElement('span');
+                        letterSpan.classList.add('letter');
+                        letterSpan.textContent = titleText[index];
+                        titleElement.appendChild(letterSpan);
+                        index++;
+                    } else {
+                        clearInterval(titleInterval);
+                    }
+                }, 100);
+            }, 3000);
+        }
+
+        function updateMusicBars() {
+            analyser.getByteFrequencyData(dataArray);
+            const leftBarHeight = dataArray[0] / 255 * 100; // Left bar height based on first frequency bin
+            const rightBarHeight = dataArray[1] / 255 * 100; // Right bar height based on second frequency bin
+            leftBar.style.height = leftBarHeight + '%';
+            rightBar.style.height = rightBarHeight + '%';
+            if (leftBarHeight > 5 || rightBarHeight > 5) {
+                leftBar.style.opacity = 1;
+                rightBar.style.opacity = 1;
+            } else {
+                leftBar.style.opacity = 0;
+                rightBar.style.opacity = 0;
+            }
+            console.log(`Left Bar Height: ${leftBarHeight}, Right Bar Height: ${rightBarHeight}`);
+        }
+
+        function startMusicBars() {
+            if (!musicBarsActive) {
+                musicBarsActive = true; // Activate music bars
+                setInterval(updateMusicBars, 100); // Start updating music bars
+                console.log("Music bars started.");
+            }
+        }
+
+        function stopMusicBars() {
+            musicBarsActive = false; // Deactivate music bars
+            leftBar.style.height = '0%'; // Reset bar heights
+            rightBar.style.height = '0%';
+            leftBar.style.opacity = 0; // Hide bars
+            rightBar.style.opacity = 0;
+            console.log("Music bars stopped.");
+        }
+
+        // Handle chat input
+        chatInput.addEventListener('keypress', async (event) => {
+            if (event.key === 'Enter' && chatInput.value.trim() !== '') {
+                const userMessage = chatInput.value.trim();
+                appendChatMessage(userMessage, 'user');
+                chatInput.value = ''; // Clear input field
+                const response = await getChatGPTResponse(userMessage);
+                appendChatMessage(response, 'assistant');
+            }
+        });
+
+        function appendChatMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message', `${sender}-message`);
+            messageDiv.textContent = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        }
+
+        window.onload = () => {
+            showTitle();
+            showWelcomeMessage();
+            videoElement.onplay = () => {
+                audioContext.resume().then(() => {
+                    console.log("AudioContext resumed.");
+                });
+            };
+            // Start listening immediately on page load
+            recognition.start();
+        };
+    </script>
+</body>
+</html>

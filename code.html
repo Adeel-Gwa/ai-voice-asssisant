@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="google-site-verification" content="k2DfLZc63LRHc4S3R5mkavoHziVLzqRTeFmwVvlJecg" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Any Video Downloader</title>
+  <link rel="icon" href="http://drive.google.com/uc?export=view&id=1A6_H6TdurNMiarWbZC53PbUQxGj6XfIo" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* General styling */
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #000; /* Default to black */
+      color: #fff; /* Default to white */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+    }
+    header {
+      background: #333; /* Dark gray */
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+      position: relative;
+    }
+    header img {
+      width: 50px;
+      margin-bottom: 10px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    .social-icons {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
+    .social-icons a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 1.5rem;
+      transition: color 0.3s ease;
+    }
+    .social-icons a:hover {
+      color: #ccc; /* Light gray on hover */
+    }
+    /* Main section */
+    .main-section {
+      text-align: center;
+      padding: 40px 20px;
+      background: #222; /* Darker gray */
+      flex: 1;
+      transition: background-color 0.3s; /* Smooth transition */
+    }
+    .main-section h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #fff; /* White */
+    }
+    .main-section p {
+      font-size: 1rem;
+      color: #ddd; /* Light gray */
+      margin-bottom: 30px;
+    }
+    .input-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .input-container input,
+    .input-container select {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd; /* Light gray border */
+      margin: 10px;
+      width: calc(100% - 20px);
+      max-width: 400px;
+      background-color: #444; /* Dark gray background */
+      color: #fff; /* White text */
+      transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+    }
+    .main-section button {
+      background: #fff; /* White background */
+      color: #000; /* Black text */
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 10px; /* Added margin for spacing */
+    }
+    .main-section button:hover {
+      background: #ddd; /* Light gray on hover */
+    }
+    /* Reload button */
+    .reload-button {
+      background: #fff; /* White background */
+      color: #000; /* Black text */
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+    }
+    .reload-button:hover {
+      background: #ddd; /* Light gray on hover */
+    }
+    /* Features section */
+    .features-section {
+      padding: 50px 15px;
+      background-color: #333; /* Dark gray */
+      text-align: center;
+    }
+    .features-section h2 {
+      margin-bottom: 40px;
+      font-size: 2rem;
+      color: #fff; /* White */
+    }
+    .feature {
+      margin-bottom: 20px;
+    }
+    .feature i {
+      font-size: 2.5rem;
+      color: #fff; /* White */
+      margin-bottom: 10px;
+    }
+    .feature p {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ddd; /* Light gray */
+    }
+    .features-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .features-row .col {
+      flex: 1 1 250px;
+      margin: 15px;
+    }
+    /* FAQ Section */
+    .faq-section {
+      background: #222; /* Darker gray */
+      padding: 50px 15px;
+    }
+    .faq-section h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      color: #fff; /* White */
+    }
+    .faq {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .faq p {
+      font-size: 1rem;
+      margin: 10px 0;
+      color: #ddd; /* Light gray */
+    }
+    .faq strong {
+      color: #fff; /* White */
+    }
+    /* Red Theme */
+    .red-theme {
+      background-color: #ff4757; /* Red background */
+      color: #fff; /* White text */
+    }
+    .red-theme header {
+      background: #c0392b; /* Darker red */
+    }
+    .red-theme .main-section {
+      background: #e74c3c; /* Lighter red */
+    }
+    .red-theme .features-section {
+      background-color: #c0392b; /* Darker red */
+    }
+    .red-theme .faq-section {
+      background: #e74c3c; /* Lighter red */
+    }
+    .red-theme .input-container input,
+    .red-theme .input-container select {
+      background-color: #fff; /* White background */
+      color: #000; /* Black text */
+    }
+    /* Yellow Theme */
+    .yellow-theme {
+      background-color: #f1c40f; /* Yellow background */
+      color: #000; /* Black text */
+    }
+    .yellow-theme header {
+      background: #e0b007; /* Darker yellow */
+    }
+    .yellow-theme .main-section {
+      background: #f39c12; /* Lighter yellow */
+    }
+    .yellow-theme .features-section {
+      background-color: #e0b007; /* Darker yellow */
+    }
+    .yellow-theme .faq-section {
+      background: #f39c12; /* Lighter yellow */
+    }
+    .yellow-theme .input-container input,
+    .yellow-theme .input-container select {
+      background-color: #000; /* Black background */
+      color: #fff; /* White text */
+    }
+  </style>
+</head>
+<body>
+  <canvas id="threejs-canvas"></canvas>
+  <!-- Header -->
+  <header>
+    <img src="http://drive.google.com/uc?export=view&id=1A6_H6TdurNMiarWbZC53PbUQxGj6XfIo" alt="Logo">
+    <h1>Rpp Video Downloader</h1>
+    <div class="social-icons">
+      <a href="javascript:void(0);" id="color-toggle" title="Change Color Scheme"><i class="fas fa-paint-brush"></i></a>
+      <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://twitter.com" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://youtube.com" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+  </header>
+  <!-- Main Section -->
+  <section class="main-section">
+    <h1>Download Your Favorite Videos!</h1>
+    <p>Quickly and easily download videos in the format you prefer.</p>
+    <div class="input-container">
+      <input type="text" placeholder="Paste your video link here" class="link" required>
+      <select class="form-control formte" required>
+        <option disabled selected>Choose Format</option>
+        <option value="mp3">MP3</option>
+        <option value="144">MP4 - 144p</option>
+        <option value="240">MP4 - 240p</option>
+        <option value="360">MP4 - 360p</option>
+        <option value="480">MP4 - 480p</option>
+        <option value="720">MP4 - 720p</option>
+        <option value="1080">MP4 - 1080p</option>
+        <option value="1440">MP4 - 2K</option>
+        <option value="2160">MP4 - 4K</option>
+      </select>
+    </div>
+    <button id="download-btn">Download Now</button>
+    <button class="reload-button" onclick="location.reload();">Reload Page</button>
+  </section>
+  <!-- Features Section -->
+  <section class="features-section">
+    <h2>Why Choose Us?</h2>
+    <div class="features-row">
+      <div class="col feature">
+        <i class="fa fa-bolt"></i>
+        <p>Super Fast</p>
+      </div>
+      <div class="col feature">
+        <i class="fa fa-shield-alt"></i>
+        <p>Safe & Secure</p>
+      </div>
+      <div class="col feature">
+        <i class="fa fa-mobile-alt"></i>
+        <p>Mobile-Friendly</p>
+      </div>
+      <div class="col feature">
+        <i class="fa fa-check-circle"></i>
+        <p>High Quality</p>
+      </div>
+    </div>
+  </section>
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq">
+      <p><strong>How do I download videos?</strong> Simply paste your link, select a format, and click "Download Now."</p>
+      <p><strong>Is it free?</strong> Yes, our service is 100% free to use.</p>
+      <p><strong>What formats are supported?</strong> MP3 and MP4 (144p, 240p, 360p, 480p, 720p, 1080p, 2K, and 4K).</p>
+      <p><strong>Can I use this on mobile?</strong> Yes, our website works seamlessly on all devices.</p>
+    </div>
+  </section>
+  <!-- Footer -->
+  <footer>
+    &copy; 2024 Rpp Any Video Downloader. All Rights Reserved.
+  </footer>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.0-alpha1/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script type="text/javascript">
+    // Three.js setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('threejs-canvas'), alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Create a cube
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+    camera.position.z = 5;
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+    // Handle window resize
+    window.addEventListener('resize', function () {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    });
+    // Download button functionality
+    $("#download-btn").click(function () {
+      var link = $(".link").val();
+      var format = $(".formte").children("option:selected").val();
+      downloadVideo(link, format);
+    });
+    function downloadVideo(link, format) {
+      $('.main-section').append('<iframe src="https://loader.to/api/button/?url=' + link + '&f=' + format + '&color=COLOR_VALUE&linkUrl=https://www.rppofficial.online/jnsfs87b19?key=dee49b262f1bf1f0876915f726b05a4c&css=CSS_URL&color=COLOR_VALUE&text=TEXT_VALUE" style="width:320px;height:60px;border:0;overflow:hidden;"></iframe>');
+    }
+    // Toggle color scheme
+    let currentTheme = 'black'; // Start with black theme
+    $("#color-toggle").click(function () {
+      if (currentTheme === 'black') {
+        $("body").removeClass("yellow-theme red-theme").addClass("red-theme");
+        currentTheme = 'red';
+      } else if (currentTheme === 'red') {
+        $("body").removeClass("red-theme").addClass("yellow-theme");
+        currentTheme = 'yellow';
+      } else {
+        $("body").removeClass("yellow-theme").addClass("black");
+        currentTheme = 'black';
+      }
+    });
+  </script>
+</body>
+</html>
